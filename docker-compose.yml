@@ -1,43 +1,28 @@
 version: '3.8'
-services:
-  db:
-    image: mysql:latest
-    environment:
-      MYSQL_ROOT_PASSWORD: 12345
-      MYSQL_DATABASE: dbpractica
-    volumes:
-      - db-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root --password=12345 || exit 1"]
-      interval: 5s
-      timeout: 10s
-      retries: 10
 
-  backend:
-    image: davud404/backend:backend_productos
-    command: python manage.py runserver 0.0.0.0:8000
+services:
+  web:
+    image: davud404/mi-app:latest
     ports:
       - "8000:8000"
-    networks:
-      - backend_network
-    deploy:
-      replicas: 1  # Ajusta según tus necesidades de escalado
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_DATABASE: FLASK_TEST
+      DB_USER: root
+      DB_PASSWORD: root
+      
 
-  frontend:
-    image: davud404/frontend:frontend_productos
+  db:
+    image: mariadb:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: FLASK_TEST
     ports:
-      - "3000:3000"
-    networks:
-      - frontend_network
-    deploy:
-      replicas: 1  # Ajusta según tus necesidades de escalado
-
-networks:
-  backend_network:
-    driver: overlay
-  frontend_network:
-    driver: overlay
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mariadb
 
 volumes:
-  db-data:
-    driver: local
+  db_data:
